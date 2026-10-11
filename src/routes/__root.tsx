@@ -24,7 +24,9 @@ function NotFoundComponent() {
           La página que buscas no existe o cambió de dirección.
         </p>
         <div className="mt-6">
-          <Button asChild><Link to="/">Volver al inicio</Link></Button>
+          <Button asChild>
+            <Link to="/">Volver al inicio</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -56,7 +58,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           >
             Intentar otra vez
           </Button>
-          <Button asChild variant="outline"><a href="/">Volver al inicio</a></Button>
+          <Button asChild variant="outline">
+            <a href="/">Volver al inicio</a>
+          </Button>
         </div>
       </div>
     </div>
@@ -68,16 +72,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Sistemas y Soluciones LP — Tecnología para negocios en Riohacha" },
+      { title: "Sistemas y Soluciones LP | Soluciones digitales en La Guajira" },
       {
         name: "description",
         content:
-          "Catálogos digitales con pedidos por WhatsApp, menús digitales y páginas web para comercios de Riohacha y La Guajira.",
+          "Soluciones digitales para educación, comercios, restaurantes, servicios y turismo en Riohacha y La Guajira.",
       },
       { property: "og:title", content: "Sistemas y Soluciones LP" },
       {
         property: "og:description",
-        content: "Digitalizamos tu negocio en Riohacha: catálogo digital, menú QR, control de fiado y más.",
+        content:
+          "Herramientas digitales prácticas para negocios, educadores y proyectos locales de La Guajira.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

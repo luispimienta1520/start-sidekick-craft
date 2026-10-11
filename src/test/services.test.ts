@@ -3,11 +3,15 @@ import { filterServices, getWhatsAppUrl, BUSINESS_WHATSAPP } from "@/lib/service
 
 describe("Service discovery", () => {
   it("finds catalogs without requiring accents", () => {
-    expect(filterServices("catalogo", "Todos").map(s => s.id)).toEqual(["catalogo"]);
+    expect(filterServices("catalogo", "Todos").map((s) => s.id)).toContain("catalogo");
   });
   it("combines a category with the search", () => {
-    expect(filterServices("inventario", "Comercio").map(s => s.id)).toEqual(["inventario"]);
+    expect(filterServices("inventario", "Comercios").map((s) => s.id)).toEqual(["inventario"]);
     expect(filterServices("inventario", "Restaurantes")).toHaveLength(0);
+  });
+  it("finds a service by area and by a feature", () => {
+    expect(filterServices("educacion", "Todos").some((s) => s.id === "academico")).toBe(true);
+    expect(filterServices("recordatorios", "Servicios").map((s) => s.id)).toEqual(["citas"]);
   });
 });
 describe("Safe business contact", () => {
