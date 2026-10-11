@@ -15,6 +15,9 @@ import {
   Share2,
   Truck,
   Bot,
+  Vote,
+  Database,
+  Handshake,
 } from "lucide-react";
 
 export const serviceCategories = [
@@ -158,6 +161,54 @@ export const services = [
       "Asistencia y seguimiento",
       "Notas o reportes sencillos",
       "Alcance definido con cuidado para proteger los datos de estudiantes",
+    ],
+  },
+  {
+    id: "votaciones",
+    icon: Vote,
+    category: "Educación",
+    title: "Sistemas de votación escolar",
+    subtitle: "Participación organizada y transparente.",
+    description:
+      "Diseñamos herramientas para organizar elecciones de personería, representantes de curso u otras consultas escolares, de acuerdo con las reglas de cada institución.",
+    audience: "Colegios, academias y organizaciones educativas.",
+    features: [
+      "Registro de candidatos y opciones",
+      "Acceso organizado para los participantes",
+      "Conteo y resumen de resultados",
+      "Alcance y medidas de privacidad definidos con la institución",
+    ],
+  },
+  {
+    id: "bases-datos",
+    icon: Database,
+    category: "Educación",
+    title: "Diseño de bases de datos",
+    subtitle: "Información ordenada para tomar mejores decisiones.",
+    description:
+      "Organizamos la estructura de información de una institución o proyecto y preparamos consultas y reportes según sus necesidades.",
+    audience: "Pequeños colegios, academias y centros de formación.",
+    features: [
+      "Diseño de tablas y relaciones",
+      "Organización de registros y catálogos",
+      "Consultas y reportes básicos",
+      "Definición de permisos y copias de seguridad según el proyecto",
+    ],
+  },
+  {
+    id: "cooperativas",
+    icon: Handshake,
+    category: "Educación",
+    title: "Gestión de cooperativas escolares",
+    subtitle: "Más claridad en las actividades y los recursos.",
+    description:
+      "Una herramienta para organizar productos, movimientos, responsables y reportes de una cooperativa escolar, según los procesos de la institución.",
+    audience: "Colegios y comunidades educativas con cooperativa escolar.",
+    features: [
+      "Registro de productos y existencias",
+      "Control de movimientos e ingresos",
+      "Seguimiento de responsables y actividades",
+      "Reportes sencillos para revisión institucional",
     ],
   },
   {

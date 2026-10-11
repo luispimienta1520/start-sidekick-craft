@@ -24,3 +24,9 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Contador privado de visitas
+
+El sitio puede enviar estadísticas de visitas a GoatCounter. Para activarlo, crea una cuenta y un sitio en [GoatCounter](https://www.goatcounter.com/), copia la dirección del sitio (por ejemplo, `https://tusitio.goatcounter.com`) y configúrala como la variable pública `VITE_GOATCOUNTER_URL` en el entorno de publicación. Mientras no se configure, el seguimiento permanece apagado. Consulta las visitas desde el panel privado de GoatCounter.
+
+Las imágenes de la sección **Mi Guajira** son ilustrativas y se pueden reemplazar por fotografías autorizadas de negocios, emprendedores y colegios de la región.

@@ -1,14 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   ArrowUp,
   Check,
   ChevronRight,
   Code2,
+  Camera,
   MapPin,
   Menu,
   MessageCircle,
+  Music2,
+  Pause,
+  Play,
   Search,
   ShieldCheck,
   Smartphone,
@@ -72,7 +76,13 @@ const navigation = [
   { id: "soluciones", label: "Soluciones" },
   { id: "proceso", label: "Cómo trabajamos" },
   { id: "nosotros", label: "Nosotros" },
+  { id: "mi-guajira", label: "Mi Guajira" },
   { id: "preguntas", label: "Preguntas" },
+];
+const socialNetworks = [
+  { name: "Instagram", id: "instagram" },
+  { name: "Facebook", id: "facebook" },
+  { name: "TikTok", id: "tiktok" },
 ];
 const faq = [
   [
@@ -116,6 +126,11 @@ function Index() {
   const [contact, setContact] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(false);
+  const [soundVolume, setSoundVolume] = useState(35);
+  const audioRef = useRef<AudioContext | null>(null);
+  const soundGainRef = useRef<GainNode | null>(null);
+  const analyticsConfigured = Boolean(import.meta.env.VITE_GOATCOUNTER_URL);
   const filtered = filterServices(query, category || "Todos");
   const showResults = category !== "" || query.trim().length > 0;
   const resetDiscovery = () => {
@@ -126,6 +141,63 @@ function Index() {
   const contactAction = (service: string) => {
     setSelected(null);
     setContact(service);
+  };
+
+  useEffect(() => {
+    const endpoint = import.meta.env.VITE_GOATCOUNTER_URL as string | undefined;
+    if (!endpoint) return;
+    try {
+      const parsed = new URL(endpoint);
+      if (parsed.protocol !== "https:" || !parsed.hostname.endsWith("goatcounter.com")) return;
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://gc.zgo.at/count.js";
+      script.dataset.goatcounter = `${parsed.origin}/count`;
+      document.head.appendChild(script);
+      return () => script.remove();
+    } catch {
+      // Analytics is inactive until a valid endpoint is configured.
+    }
+  }, []);
+
+  useEffect(() => {
+    if (soundGainRef.current && audioRef.current) {
+      soundGainRef.current.gain.setTargetAtTime(
+        soundOn ? (soundVolume / 100) * 0.12 : 0,
+        audioRef.current.currentTime,
+        0.25,
+      );
+    }
+  }, [soundOn, soundVolume]);
+
+  useEffect(
+    () => () => {
+      void audioRef.current?.close();
+    },
+    [],
+  );
+
+  const toggleSound = async () => {
+    if (!audioRef.current) {
+      const context = new window.AudioContext();
+      const master = context.createGain();
+      master.gain.value = 0;
+      master.connect(context.destination);
+      [174.61, 220, 261.63].forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const voice = context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = frequency;
+        voice.gain.value = [0.34, 0.22, 0.12][index];
+        oscillator.connect(voice);
+        voice.connect(master);
+        oscillator.start();
+      });
+      audioRef.current = context;
+      soundGainRef.current = master;
+    }
+    if (audioRef.current.state === "suspended") await audioRef.current.resume();
+    setSoundOn((current) => !current);
   };
 
   return (
@@ -467,53 +539,168 @@ function Index() {
         </section>
 
         <section id="nosotros" className="section-space">
-          <div className="page-container grid items-center gap-10 md:grid-cols-2">
-            <div>
-              <p className="eyebrow">Nuestra esencia</p>
-              <h2 className="section-title mt-3">
-                La tecnología avanza.
-                <br />
-                La cercanía se queda.
-              </h2>
-              <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground">
-                Somos Sistemas y Soluciones LP, una iniciativa de Luis Pimienta en Riohacha. Creamos
-                herramientas digitales útiles para negocios, educadores y proyectos locales, con
-                atención cercana y acuerdos claros.
-              </p>
-              <a
-                href="#contacto"
-                className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"
-              >
-                Conversemos sobre tu idea <ArrowRight className="h-4 w-4" />
-              </a>
-            </div>
-            <div className="grid gap-6">
-              {[
-                [Users, "Trato cercano", "Hablamos en español claro, sin palabras complicadas."],
-                [
-                  Smartphone,
-                  "Sencillo y práctico",
-                  "Pensamos en cómo trabajas, desde el celular o el computador.",
-                ],
-                [
-                  ShieldCheck,
-                  "Acuerdos claros",
-                  "Definimos qué incluye tu solución antes de empezar.",
-                ],
-              ].map(([Icon, title, description]) => {
-                const FeatureIcon = Icon as typeof Users;
-                return (
-                  <div key={String(title)} className="flex gap-4 border-b border-border pb-6">
-                    <FeatureIcon className="mt-1 h-6 w-6 shrink-0 text-primary" />
-                    <div>
-                      <h3 className="text-sm font-bold">{String(title)}</h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        {String(description)}
-                      </p>
-                    </div>
+          <div className="page-container">
+            <div className="grid items-start gap-10 lg:grid-cols-2">
+              <div>
+                <p className="eyebrow">Nuestra esencia</p>
+                <h2 className="section-title mt-3">Tecnología con propósito y raíces locales.</h2>
+                <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground">
+                  Somos Sistemas y Soluciones LP, una iniciativa de Luis Pimienta en Riohacha.
+                  Queremos acercar herramientas digitales sencillas a quienes emprenden, enseñan y
+                  trabajan por el crecimiento de La Guajira.
+                </p>
+                <div className="mt-7 aspect-[4/3] overflow-hidden rounded-3xl border border-dashed border-primary/40 bg-secondary/60">
+                  <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-card text-primary shadow-sm">
+                      <Camera className="h-7 w-7" />
+                    </span>
+                    <span className="font-semibold">Tu foto irá aquí</span>
+                    <span className="max-w-xs text-sm leading-6 text-muted-foreground">
+                      Espacio reservado para una foto tuya, de tu equipo o de tu trabajo en
+                      Riohacha.
+                    </span>
                   </div>
-                );
-              })}
+                </div>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <article className="rounded-2xl border border-border bg-card p-6">
+                  <p className="eyebrow">Nuestra misión</p>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                    Acompañar a pequeños negocios, educadores e iniciativas locales con soluciones
+                    tecnológicas prácticas, cercanas y pensadas para sus necesidades reales.
+                  </p>
+                </article>
+                <article className="rounded-2xl border border-border bg-card p-6">
+                  <p className="eyebrow">Nuestra visión</p>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                    Ser un aliado confiable para que más personas y organizaciones de La Guajira
+                    puedan aprovechar la tecnología y hacer crecer sus ideas.
+                  </p>
+                </article>
+                <div className="grid gap-4 sm:col-span-2 sm:grid-cols-3">
+                  {[
+                    [
+                      Users,
+                      "Trato cercano",
+                      "Hablamos en español claro, sin palabras complicadas.",
+                    ],
+                    [
+                      Smartphone,
+                      "Sencillo y práctico",
+                      "Pensamos en cómo trabajas, desde el celular o el computador.",
+                    ],
+                    [
+                      ShieldCheck,
+                      "Acuerdos claros",
+                      "Definimos qué incluye tu solución antes de empezar.",
+                    ],
+                  ].map(([Icon, title, description]) => {
+                    const FeatureIcon = Icon as typeof Users;
+                    return (
+                      <div
+                        key={String(title)}
+                        className="rounded-2xl border border-border bg-secondary/40 p-5"
+                      >
+                        <FeatureIcon className="h-6 w-6 shrink-0 text-primary" />
+                        <div>
+                          <h3 className="mt-3 text-sm font-bold">{String(title)}</h3>
+                          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                            {String(description)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+            <a
+              href="#contacto"
+              className="mt-6 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-primary"
+            >
+              Conversemos sobre tu idea <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        </section>
+
+        <section id="mi-guajira" className="section-space border-y border-border bg-secondary/45">
+          <div className="page-container">
+            <p className="eyebrow">Orgullo de nuestra tierra</p>
+            <h2 className="section-title mt-3">Mi Guajira</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+              Una vitrina para reconocer a quienes construyen nuestra tierra cada día: pequeños
+              negocios, restaurantes, colegios y personas que convierten sus ideas en oportunidades.
+            </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                [
+                  "Restaurantes pequeños",
+                  "Sabores locales y mesas que reúnen a la comunidad.",
+                  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+                ],
+                [
+                  "Emprendedores y micronegocios",
+                  "Tiendas, talleres y oficios que impulsan la economía local.",
+                  "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=900&q=80",
+                ],
+                [
+                  "Colegios pequeños",
+                  "Espacios donde nacen aprendizajes y nuevas ideas.",
+                  "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=900&q=80",
+                ],
+                [
+                  "Artesanos y creadores",
+                  "Manos talentosas que convierten tradición e imaginación en productos.",
+                  "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&w=900&q=80",
+                ],
+                [
+                  "Negocios familiares",
+                  "Historias de esfuerzo que crecen con el apoyo de su comunidad.",
+                  "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=900&q=80",
+                ],
+                [
+                  "Ideas que comienzan",
+                  "Cada proyecto pequeño puede ser el comienzo de algo grande.",
+                  "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=900&q=80",
+                ],
+              ].map(([title, description, photo]) => (
+                <article
+                  key={title}
+                  className="overflow-hidden rounded-2xl border border-border bg-card"
+                >
+                  <img
+                    src={photo}
+                    alt={`${title}, imagen representativa de la comunidad guajira`}
+                    loading="lazy"
+                    className="aspect-[4/3] w-full object-cover"
+                  />
+                  <div className="p-5">
+                    <h3 className="font-bold">{title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+                    <p className="mt-3 text-[11px] text-muted-foreground">
+                      Imagen representativa; pronto podremos mostrar historias y fotos locales.
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <blockquote className="rounded-2xl bg-ocean p-6 text-ocean-foreground">
+                <p className="text-lg font-semibold leading-8">
+                  “Encomienda a Jehová tu camino, y confía en él; y él hará.”
+                </p>
+                <cite className="mt-3 block text-sm not-italic text-ocean-foreground/75">
+                  Salmos 37:5 · Reina-Valera 1960
+                </cite>
+              </blockquote>
+              <blockquote className="rounded-2xl border border-primary/20 bg-card p-6">
+                <p className="text-lg font-semibold leading-8">
+                  No temas dar el siguiente paso: Dios está contigo.
+                </p>
+                <cite className="mt-3 block text-sm not-italic text-muted-foreground">
+                  Inspirado en Josué 1:9
+                </cite>
+              </blockquote>
             </div>
           </div>
         </section>
@@ -600,11 +787,86 @@ function Index() {
               </Button>
             </nav>
           </div>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-5">
+            <p className="text-xs font-semibold text-muted-foreground">Encuéntranos en redes</p>
+            <div className="flex items-center gap-2">
+              {socialNetworks.map((network) => (
+                <span
+                  key={network.name}
+                  title={`${network.name}: próximamente`}
+                  aria-label={`${network.name}, próximamente`}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
+                    {network.id === "instagram" && (
+                      <>
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="4"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        />
+                        <circle cx="18" cy="6" r="1.25" />
+                      </>
+                    )}
+                    {network.id === "facebook" && (
+                      <path d="M13.5 21v-8h2.8l.4-3.1h-3.2v-2c0-.9.3-1.5 1.6-1.5h1.7V3.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.1H7.3V13h2.8v8h3.4Z" />
+                    )}
+                    {network.id === "tiktok" && (
+                      <path d="M19.6 8.2a7.1 7.1 0 0 1-4.2-1.4v8.1a5.2 5.2 0 1 1-4.5-5.1v3.1a2.2 2.2 0 1 0 1.5 2.1V2h3a4.3 4.3 0 0 0 4.2 3.9v2.3Z" />
+                    )}
+                  </svg>
+                </span>
+              ))}
+              <span className="ml-1 text-xs text-muted-foreground">Próximamente</span>
+            </div>
+          </div>
           <div className="mt-6 border-t border-border pt-5 text-xs text-muted-foreground">
             Tecnología con raíces en La Guajira.
           </div>
         </div>
       </footer>
+
+      <div className="sound-control fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-border bg-background/95 p-2 shadow-lg backdrop-blur">
+        <Button
+          type="button"
+          variant={soundOn ? "default" : "outline"}
+          size="icon"
+          className="h-10 w-10 shrink-0 rounded-full"
+          onClick={() => void toggleSound()}
+          aria-label={soundOn ? "Pausar sonido ambiental" : "Activar sonido ambiental"}
+          title={soundOn ? "Pausar sonido ambiental" : "Activar sonido ambiental"}
+        >
+          {soundOn ? <Pause /> : <Play />}
+        </Button>
+        <div className="flex items-center gap-2 pr-2">
+          <Music2 className="h-4 w-4 text-primary" aria-hidden="true" />
+          <label className="sr-only" htmlFor="sound-volume">
+            Volumen del sonido ambiental
+          </label>
+          <input
+            id="sound-volume"
+            type="range"
+            min="0"
+            max="100"
+            value={soundVolume}
+            onChange={(event) => setSoundVolume(Number(event.target.value))}
+            className="w-16 accent-primary sm:w-20"
+          />
+        </div>
+      </div>
 
       <Dialog
         open={selected !== null}
@@ -691,6 +953,22 @@ function Index() {
               filtros funcionan en tu navegador; no guardamos solicitudes de contacto desde esta
               página.
             </p>
+            {analyticsConfigured && (
+              <p>
+                El contador de visitas está activo con GoatCounter. Registra estadísticas de visitas
+                y algunos datos técnicos agregados; no usa cookies ni guarda información en el
+                navegador. Puedes conocer más en{" "}
+                <a
+                  className="font-semibold text-primary underline"
+                  href="https://www.goatcounter.com/help/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  su política de privacidad
+                </a>
+                .
+              </p>
+            )}
             <p>
               La página carga tipografías de Google Fonts, cuyo proveedor puede recibir datos
               técnicos de conexión. La plataforma de alojamiento puede registrar información técnica
